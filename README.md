@@ -9,7 +9,7 @@
 - 去掉地图图片及其导航按钮
 - 保留邀请函本身：封面、照片、文字、日历、倒计时、婚礼信息
 - 页面上方的书法标题（「好久不见 / 婚礼见」「婚礼信息 /」「我们 / 婚礼见」「她 / 他 / 我们」）保留原来的 Bifeng 手写体；其余文字（包括中文）统一使用 Maple Mono CN
-- 自动滚动目前暂停；滚轮 / 触摸 / 键盘仍可手动滚动，触摸带惯性，没有锚点吸附。打开 `js/main.js` 的 `AUTO_SCROLL_ENABLED` 即可恢复自动缓慢向下滚动
+- 页面默认自动缓慢向下滚动；滚轮 / 触摸 / 键盘都可以介入，触摸带惯性，没有锚点吸附
 
 ## 打开方式
 
@@ -25,7 +25,7 @@ python3 -m http.server 8000
 
 ## 交互说明
 
-- **自动滚动**：目前是暂停状态（`AUTO_SCROLL_ENABLED = false`）。想恢复时把 `js/main.js` 里的这个值改成 `true`；恢复后约 2.4 秒开始，以设计稿 40px/秒 缓慢向下滚动。
+- **自动滚动**：默认开启（`AUTO_SCROLL_ENABLED = true`），打开后约 2.4 秒开始，以设计稿 40px/秒 缓慢向下滚动。
 - **鼠标滚轮**：向下/向上滚动一段距离，停顿约 1.1 秒后自动继续缓慢向下。
 - **触摸**：手指拖动即可，松手后会保留滑动惯性；惯性结束后自动继续缓慢向下。
 - **键盘**：方向键 / PageUp / PageDown / 空格 / Home / End。
@@ -46,8 +46,8 @@ python3 -m http.server 8000
 - **日历**：`js/main.js` 的 `new Date(2026, 10, 1)` 和 `day === 28` 控制月份与高亮日期。
 - **字体**：正文 / 中文使用 Maple Mono CN；书法标题使用 `--calligraphy`。
   如果想连书法标题也换成 Maple，把 `css/style.css` 里的 `--calligraphy` 改成 `var(--maple)` 即可。
-- **背景音乐**：`assets/audio/theme-kuwo.mp3`（G.E.M. 邓紫棋《唯一》，约 4MB）。
-- **自动滚动**：`js/main.js` 顶部的 `AUTO_SCROLL_ENABLED` 控制开关，`AUTO_SPEED` 控制速度（设计稿像素/秒）。
+- **背景音乐**：`assets/audio/theme-kuwo.mp3`（G.E.M. 邓紫棋《唯一》，约 4MB）。页面加载时会尝试自动播放；浏览器若拦截，首次点击 / 滚动 / 触摸会自动开始（微信内已做 `WeixinJSBridgeReady` 兼容）。
+- **自动滚动**：`js/main.js` 顶部的 `AUTO_SCROLL_ENABLED` 控制开关（当前为 `true`），`AUTO_SPEED` 控制速度（设计稿像素/秒）。
 - **桌面取景高度**：`fitStage()` 里的 `700`。数值越小，桌面端画面越大；手机端按屏幕宽度自适应，不做固定高度。
 
 

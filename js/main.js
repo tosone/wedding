@@ -10,7 +10,7 @@
 
   var DESIGN_W = 390;
   var DESIGN_H = 844;
-  var AUTO_SCROLL_ENABLED = false; // 暂停自动滚动；想恢复改成 true
+  var AUTO_SCROLL_ENABLED = true; // 自动缓慢向下滚动
   var AUTO_SPEED = 40; // 设计稿像素 / 秒
   var WHEEL_RESUME_DELAY = 1100;
   var TOUCH_RESUME_DELAY = 1200;
@@ -410,6 +410,19 @@
         { once: true, passive: name === "pointerdown" }
       );
     });
+
+    // 微信内 iOS 常见：WeixinJSBridgeReady 之后允许自动播放
+    document.addEventListener(
+      "WeixinJSBridgeReady",
+      function () {
+        playMusic();
+      },
+      false
+    );
+
+    if (window.WeixinJSBridge) {
+      playMusic();
+    }
 
     window.addEventListener("load", function () {
       playMusic();
