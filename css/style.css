@@ -50,6 +50,17 @@ img {
   -webkit-user-drag: none;
 }
 
+/* 仅给微信等抓取器看的分享缩略图：视觉上不可见，但保留真实尺寸，避免被当作小图标丢弃 */
+.share-thumb {
+  position: fixed;
+  top: 0;
+  left: -9999px;
+  width: 300px;
+  height: 300px;
+  opacity: 0;
+  pointer-events: none;
+}
+
 button {
   font: inherit;
   cursor: pointer;
@@ -98,12 +109,12 @@ button {
 .hero__photo {
   position: absolute;
   top: 0;
-  left: 50%;
+  left: 210px;
   right: auto;
   bottom: auto;
   width: auto;
   height: 980px;
-  transform: translateX(calc(-50% - 25px)) scale(0.8);
+  transform: translateX(calc(-50% + 25px)) scale(-0.8, 0.8); /* scaleX 为负 = 水平镜像翻转；translate 的 ±25px 随之一并取反，保持取景对称 */
   transform-origin: top center;
   -webkit-mask-image: none;
   mask-image: none;
@@ -442,7 +453,7 @@ button {
 
 .calendar-section__bg {
   position: absolute;
-  top: 107px;
+  top: 77px;
   left: 0;
   width: 390px;
   height: calc(100% - 107px);

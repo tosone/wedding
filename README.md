@@ -153,5 +153,97 @@ git lfs ls-files
 
 - 图片、音乐、Bifeng 书法字体沿用原页面；HTML / CSS / JS 已重新编写。
 - Maple Mono CN 使用 OFL 许可，许可文件见 `assets/fonts/OFL.txt`。页面默认加载按当前文案裁剪的子集；如果改成子集之外的汉字，会自动回退到同目录下的完整 Maple Mono CN 字体。
-- 页面里的「婚贝大酒店 A 栋 9F 幸福宴会厅」是原模板的占位地址，请替换成真实场地。
+- 场地：河南省安阳市内黄县二安镇（如有变动改 `index.html` 的 `.info__venue`）
 - 页面只做展示，不包含任何评论、提交或送礼物的接口逻辑。
+
+## 微信分享卡片
+
+分享到微信时，卡片长什么样分两种情况：
+
+### 1. 不做任何开发（现在的做法，只能「影响」，不能「控制」）
+
+微信没有公开的、纯前端可用的分享协议，它**不读 `og:*` / `twitter:*`**，抓取规则大致是：
+
+- 标题：`<title>`
+- 描述：`<meta name="description">`，没有就用页面开头的文字
+- 缩略图：页面里**第一张图片**，且只认 `jpg` / `png` / `gif`（`webp` 会被忽略）
+
+页面里只加了两样东西（其他平台用的 `og:*` / `twitter:*` / `canonical` 已经去掉）：
+
+- `index.html` 头部的 `<title>` + `<meta name="description">`
+- `<body>` 最前面那张隐藏的 `assets/images/share-cover.jpg`（600×600，微信抓的就是它）
+- 缩略图样式在 `css/style.css` 的 `.share-thumb`：绝对定位到屏幕外而不是 `display:none`，否则抓取器会跳过
+
+换缩略图（从婚纱照裁一张正方形，微信缩略图是正方形裁切，建议 ≥ 300×300）：
+
+```bash
+ffmpeg -i assets/images/hero-new2.webp \
+  -vf "crop=2600:2600:0:0,scale=600:600" -q:v 3 assets/images/share-cover.jpg
+```
+
+裁切说明：`crop=宽:高:x:y`，原图 2600×3900。`y=0` 表示从照片最顶部开始取正方形，保住头顶和上方留白，裙摆底部被裁掉。想把人往下移一点就加大 `y`（如 `0:200`）。
+
+微信有缓存：改完先在微信里打开一次链接（必要时重启微信，或在链接后加 `?v=2`）才会刷新。
+
+> 当前线上地址是 `https://config.tosone.cn/wedding/index.html`。更新页面和缩略图后记得同步到 COS：`assets/images/share-cover.jpg` 必须真的能访问（缺了就只有文字没有图）。
+
+### 2. 完全控制标题 / 描述 / 图片（需要公众号 + 后端签名）
+
+如果必须 100% 指定卡片内容，只能用微信 JS-SDK。前置条件缺一不可：
+
+- 一个**已微信认证**的服务号（订阅号不行）
+- 一个**已备案**、能上传 `MP_verify_xxx.txt` 做域名校验的域名（`github.io` 无法通过校验）
+- 一个能安全保存 `appsecret` 的后端，用来换 `access_token` → `jsapi_ticket` → 计算签名
+
+前端部分（`js/share.js` 之类）：
+
+```html
+<script src="https://res.wx.qq.com/open/js/jweixin-1.6.0.js"></script>
+<script>
+  const share = {
+    title: '郭亚宁 & 李倩 · 婚礼邀请',
+    desc: '好久不见，婚礼见。2026年11月28日 星期六',
+    link: location.href.split('#')[0],
+    imgUrl: 'https://your-domain.com/assets/images/share-cover.jpg', // 必须公网可访问
+  };
+  fetch(`/api/wx-signature?url=${encodeURIComponent(location.href.split('#')[0])}`)
+    .then(r => r.json())
+    .then(({ appId, timestamp, nonceStr, signature }) => {
+      wx.config({
+        debug: false,
+        appId, timestamp, nonceStr, signature,
+        jsApiList: ['updateAppMessageShareData', 'updateTimelineShareData'],
+      });
+      wx.ready(() => {
+        wx.updateAppMessageShareData({ ...share, success() {} });   // 发给朋友 / 群
+        wx.updateTimelineShareData({ ...share });                   // 分享到朋友圈（图片取方形中心裁切）
+      });
+      wx.error(err => console.warn('wx.config failed', err));
+    });
+</script>
+```
+
+后端签名（Node 版核心逻辑）：
+
+```js
+const crypto = require('crypto');
+const noncestr = crypto.randomBytes(8).toString('hex');
+const timestamp = Math.floor(Date.now() / 1000);
+const ticket = await getJsapiTicket(); // 由 access_token 换得，缓存 7000s
+const raw = `jsapi_ticket=${ticket}&noncestr=${noncestr}&timestamp=${timestamp}&url=${url}`;
+const signature = crypto.createHash('sha1').update(raw).digest('hex');
+res.json({ appId, timestamp, noncestr, signature });
+```
+
+### 3. 反过来说：为什么之前分享出去只是一条链接
+
+如果卡片连标题和缩略图都没有，通常是微信**抓不到页面**，而不是少了 meta：
+
+- 之前跑在 `tosone.github.io`，国内经常无法访问，微信服务器抓不到 → 退化成纯链接
+- 现在换成 `https://config.tosone.cn/wedding/index.html`（腾讯云 COS + 已备案域名），抓取就没问题了
+- 只要页面里第一张图是能访问的 jpg（本项目的 `assets/images/share-cover.jpg`），卡片就会带上缩略图
+
+### 4. 另外两个顺手能做的
+
+- 朋友圈只会显示标题 + 正方形缩略图，取的是同一张 `imgUrl`
+- 分享链接里的 `#` 之后的内容会被截断，所以不要把关键参数放在 hash 里
