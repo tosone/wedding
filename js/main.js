@@ -411,17 +411,32 @@
       );
     });
 
-    // 微信内 iOS 常见：WeixinJSBridgeReady 之后允许自动播放
+    // 微信内（iOS / Android）常见：WeixinJSBridgeReady 之后才被允许自动播放。
+    // 如果事件在脚本执行前就已经触发，用 window.WeixinJSBridge 立即补一次。
+    // 少数机型第一次 play() 会被拒绝，所以 bridge 就绪后再短重试几次。
+    function autoPlayMusic(attempt) {
+      if (!audio.paused) {
+        return;
+      }
+      playMusic();
+      attempt = attempt || 0;
+      if (attempt < 6 && audio.paused) {
+        window.setTimeout(function () {
+          autoPlayMusic(attempt + 1);
+        }, 400);
+      }
+    }
+
     document.addEventListener(
       "WeixinJSBridgeReady",
       function () {
-        playMusic();
+        autoPlayMusic(0);
       },
       false
     );
 
     if (window.WeixinJSBridge) {
-      playMusic();
+      autoPlayMusic(0);
     }
 
     window.addEventListener("load", function () {
