@@ -42,8 +42,8 @@ python3 -m http.server 8000
 
 - **文案 / 姓名 / 日期 / 地址**：直接改 `index.html`。
 - **倒计时目标时间**：`js/main.js` 里的
-  `new Date("2026-11-28T00:00:00+08:00")`。目前倒计时只显示天和时。
-- **日历**：`js/main.js` 的 `new Date(2026, 10, 1)` 和 `day === 28` 控制月份与高亮日期。
+  `new Date("2026-11-26T00:00:00+08:00")`。目前倒计时只显示天和时。
+- **日历**：`js/main.js` 的 `new Date(2026, 10, 1)` 和 `day === 26` 控制月份与高亮日期。
 - **字体**：正文 / 中文使用 Maple Mono CN；书法标题使用 `--calligraphy`。
   如果想连书法标题也换成 Maple，把 `css/style.css` 里的 `--calligraphy` 改成 `var(--maple)` 即可。
 - **背景音乐**：`assets/audio/theme-kuwo.mp3`（G.E.M. 邓紫棋《唯一》，约 4MB）。页面加载时会尝试自动播放；浏览器若拦截，首次点击 / 滚动 / 触摸会自动开始（微信内已做 `WeixinJSBridgeReady` 兼容）。
@@ -202,7 +202,7 @@ ffmpeg -i assets/images/hero-new2.webp \
 <script>
   const share = {
     title: '郭亚宁 & 李倩 · 婚礼邀请',
-    desc: '好久不见，婚礼见。2026年11月28日 星期六',
+    desc: '好久不见，婚礼见。2026年11月26日 星期四',
     link: location.href.split('#')[0],
     imgUrl: 'https://your-domain.com/assets/images/share-cover.jpg', // 必须公网可访问
   };

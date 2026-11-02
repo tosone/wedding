@@ -111,7 +111,7 @@
     for (var day = 1; day <= 30; day += 1) {
       var cell = document.createElement("span");
       cell.className =
-        "calendar__day" + (day === 28 ? " is-active" : "");
+        "calendar__day" + (day === 26 ? " is-active" : "");
       cell.textContent = String(day);
       grid.appendChild(cell);
     }
@@ -120,7 +120,7 @@
   /* ---------- 倒计时 ---------- */
 
   function startCountdown() {
-    var wedding = new Date("2026-11-28T00:00:00+08:00").getTime();
+    var wedding = new Date("2026-11-26T00:00:00+08:00").getTime();
     var nums = {};
     var nodes = document.querySelectorAll(".cd-num");
 
